@@ -4,6 +4,8 @@
 
 package com.example.tripplanner.ui.theme
 
+import BookingsScreen
+import BudgetScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -152,63 +154,6 @@ fun ScheduleScreen() {
     }
 }
 
-// -----------------------------
-// Budget Screen
-// -----------------------------
 
-@Composable
-fun BudgetScreen() {
-    val expenses = listOf(
-        "Dinner – $120 (Alex)",
-        "Hotel – $600 (You)"
-    )
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Budget Summary", style = MaterialTheme.typography.headlineSmall)
-        LinearProgressIndicator(progress = 0.7f, modifier = Modifier.fillMaxWidth())
-        Text("Remaining: $900")
-        Spacer(Modifier.height(12.dp))
 
-        LazyColumn {
-            items(expenses) { expense ->
-                Card(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                    Text(expense, modifier = Modifier.padding(16.dp))
-                }
-            }
-        }
-    }
-}
-
-// -----------------------------
-// Bookings Screen
-// -----------------------------
-
-@Composable
-fun BookingsScreen() {
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        item {
-            Text("Bookings", style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(12.dp))
-        }
-
-        item {
-            SectionCard("✈ Flights", listOf("JFK → FCO", "FCO → JFK"))
-            Spacer(Modifier.height(8.dp))
-            SectionCard("🏨 Accommodations", listOf("Hotel Roma Central"))
-            Spacer(Modifier.height(8.dp))
-            SectionCard("🎟 Activities", listOf("Colosseum Tour"))
-        }
-    }
-}
-
-@Composable
-fun SectionCard(title: String, items: List<String>) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            items.forEach {
-                Text("• $it")
-            }
-        }
-    }
-}
