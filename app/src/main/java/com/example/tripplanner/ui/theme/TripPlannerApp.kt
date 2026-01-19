@@ -6,6 +6,8 @@ package com.example.tripplanner.ui.theme
 
 import BookingsScreen
 import BudgetScreen
+import OverviewScreen
+import ScheduleScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -85,74 +87,9 @@ fun GlobalFab(navController: NavHostController) {
     }
 }
 
-// -----------------------------
-// Overview Screen
-// -----------------------------
 
-@Composable
-fun OverviewScreen() {
-    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
-        item {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Italy Trip 🇮🇹", style = MaterialTheme.typography.headlineSmall)
-                    Text("June 10 – June 20 • 3 people")
-                    Spacer(Modifier.height(8.dp))
-                    Text("5 days to go", style = MaterialTheme.typography.labelLarge)
-                }
-            }
-        }
 
-        item { Spacer(Modifier.height(12.dp)) }
 
-        item {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Budget", style = MaterialTheme.typography.titleMedium)
-                    LinearProgressIndicator(progress = 0.7f, modifier = Modifier.fillMaxWidth())
-                    Text("$2,100 spent / $3,000")
-                }
-            }
-        }
-
-        item { Spacer(Modifier.height(12.dp)) }
-
-        item {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Next Event", style = MaterialTheme.typography.titleMedium)
-                    Text("✈ Flight to Rome – 08:40")
-                }
-            }
-        }
-    }
-}
-
-// -----------------------------
-// Schedule Screen
-// -----------------------------
-
-@Composable
-fun ScheduleScreen() {
-    val events = listOf(
-        "08:40 ✈ Flight to Rome",
-        "13:00 🏨 Hotel Check-in",
-        "15:00 🍝 Lunch",
-        "18:30 🚶 Walking Tour"
-    )
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("June 10 – Day 1", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(12.dp))
-        LazyColumn {
-            items(events) { event ->
-                Card(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                    Text(event, modifier = Modifier.padding(16.dp))
-                }
-            }
-        }
-    }
-}
 
 
 
