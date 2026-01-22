@@ -1,8 +1,6 @@
 package com.example.tripplanner.ui.theme.trip
 
 import BudgetScreen
-import OverviewScreen
-import ScheduleScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -11,6 +9,8 @@ import androidx.navigation.compose.composable
 import com.example.tripplanner.ui.theme.trip.logistics.LogisticsScreen
 import com.example.tripplanner.ui.theme.trip.more.MoreScreen
 import com.example.tripplanner.ui.theme.trip.navigation.TripTab
+import com.example.tripplanner.ui.theme.trip.overview.OverviewScreen
+import com.example.tripplanner.ui.theme.trip.schedule.ScheduleScreen
 
 @Composable
 fun TripNavGraph(
@@ -22,10 +22,26 @@ fun TripNavGraph(
         startDestination = TripTab.Overview.route,
         modifier = modifier
     ) {
-        composable(TripTab.Overview.route) { OverviewScreen() }
-        composable(TripTab.Schedule.route) { ScheduleScreen() }
-        composable(TripTab.Budget.route) { BudgetScreen() }
-        composable(TripTab.Logistics.route) { LogisticsScreen() }
-        composable(TripTab.More.route) { MoreScreen() }
+        composable(TripTab.Overview.route) {
+            OverviewScreen()
+        }
+        composable(TripTab.Budget.route) {
+            BudgetScreen()
+        }
+        composable(
+            route = TripTab.Logistics.route,
+        ) {
+            LogisticsScreen()
+        }
+        composable(
+                route = TripTab.Schedule.route,
+        ) {
+        ScheduleScreen()
+        }
+        composable(
+            route = TripTab.More.route,
+        ) {
+            MoreScreen()
+        }
     }
 }
