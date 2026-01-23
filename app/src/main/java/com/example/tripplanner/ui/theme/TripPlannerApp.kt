@@ -1,6 +1,8 @@
 package com.example.tripplanner.ui.theme
 
+import android.app.Application
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -43,10 +45,16 @@ fun TripPlannerApp() {
             route = Routes.TRIP,
             arguments = listOf(navArgument("tripId") { type = NavType.StringType })
         ) { backStackEntry ->
+            val application = LocalContext.current.applicationContext as Application
+
             val tripViewModel: TripViewModel = viewModel(
-                key = backStackEntry.arguments!!.getString("tripId"),
-                factory = TripViewModelFactory(backStackEntry.savedStateHandle)
+                key = backStackEntry.arguments?.getString("tripId"),
+                factory = TripViewModelFactory(
+                    savedStateHandle = backStackEntry.savedStateHandle,
+                    application = application
+                )
             )
+
             TripScaffold(
                 tripViewModel = tripViewModel,
                 onExitTrip = { navController.popBackStack() }

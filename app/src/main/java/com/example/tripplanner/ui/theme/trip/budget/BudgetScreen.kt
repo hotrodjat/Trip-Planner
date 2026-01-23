@@ -29,8 +29,8 @@ fun BudgetScreen() {
             Text("Add $100")
         }
 
-        Button(onClick = { viewModel.resetBudget() }) {
-            Text("Reset Budget")
-        }
+//        Button(onClick = { viewModel.resetBudget() }) {
+//            Text("Reset Budget")
+//        }
     }
 }

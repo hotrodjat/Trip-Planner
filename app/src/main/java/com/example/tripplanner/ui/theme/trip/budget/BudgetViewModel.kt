@@ -13,7 +13,7 @@ class BudgetViewModel(
         tripViewModel.addToBudget(amount)
     }
 
-    fun resetBudget() {
-        tripViewModel.resetBudget()
-    }
+//    fun resetBudget() {
+//        tripViewModel.resetBudget()
+//    }
 }
