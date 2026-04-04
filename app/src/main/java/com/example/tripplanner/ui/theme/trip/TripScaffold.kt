@@ -29,7 +29,7 @@ fun TripScaffold(
 //        }
 //    )
 
-    val tabs = listOf(TripTab.Overview, TripTab.Budget, TripTab.Logistics, TripTab.Schedule, TripTab.More)
+    val tabs = listOf(TripTab.Overview, TripTab.Expense, TripTab.Logistics, TripTab.Schedule, TripTab.More)
 
     CompositionLocalProvider(LocalTripViewModel provides tripViewModel) {
         Scaffold(

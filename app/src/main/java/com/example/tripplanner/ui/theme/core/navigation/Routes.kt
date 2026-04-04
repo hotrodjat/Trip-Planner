@@ -5,5 +5,5 @@ object Routes {
     const val ACCOUNT = "account"
     const val TRIP = "trip/{tripId}"
 
-    fun trip(tripId: String) = "trip/$tripId"
+    fun trip(tripId: Long) = "trip/$tripId"
 }

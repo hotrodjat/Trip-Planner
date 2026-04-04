@@ -30,5 +30,5 @@ class MoreViewModel(
     }
 
     // Access tripId if needed
-    val tripId: String get() = tripViewModel.tripId
+    val tripId: Long get() = tripViewModel.tripId
 }

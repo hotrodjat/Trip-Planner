@@ -43,14 +43,17 @@ fun TripPlannerApp() {
 
         composable(
             route = Routes.TRIP,
-            arguments = listOf(navArgument("tripId") { type = NavType.StringType })
+            arguments = listOf(navArgument("tripId") { type = NavType.LongType })
         ) { backStackEntry ->
             val application = LocalContext.current.applicationContext as Application
+            val tripId = backStackEntry.arguments?.getLong("tripId") ?: 0L
 
             val tripViewModel: TripViewModel = viewModel(
-                key = backStackEntry.arguments?.getString("tripId"),
+                key = tripId.toString(),
                 factory = TripViewModelFactory(
-                    savedStateHandle = backStackEntry.savedStateHandle,
+                    savedStateHandle = backStackEntry.savedStateHandle.apply {
+                        this["tripId"] = tripId
+                    },
                     application = application
                 )
             )

@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripsScaffold(
-    onTripSelected: (String) -> Unit,
+    onTripSelected: (Long) -> Unit,
     onAccountClick: () -> Unit
 ) {
     Scaffold(

@@ -11,9 +11,9 @@ object DatabaseProvider {
     fun get(context: Context): TripDatabase =
         INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
-                context.applicationContext,
-                TripDatabase::class.java,
-                "trip_planner.db"
-            ).build().also { INSTANCE = it }
+                        context.applicationContext,
+                        TripDatabase::class.java,
+                        "trip_planner.db"
+                    ).fallbackToDestructiveMigration(false).build().also { INSTANCE = it }
         }
 }
