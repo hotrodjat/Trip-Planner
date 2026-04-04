@@ -9,11 +9,11 @@ import com.example.tripplanner.ui.theme.trips.components.TripCard
 @Composable
 fun TripsListScreen(
     modifier: Modifier = Modifier,
-    onTripSelected: (String) -> Unit
+    onTripSelected: (Long) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         items(
-            listOf("trip-1", "trip-2") // placeholder IDs
+            listOf(1L, 2L) // placeholder IDs
         ) { tripId ->
             TripCard(
                 tripName = "Trip $tripId",

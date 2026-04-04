@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 data class OverviewUiState(
     val title: String,
-    val tripId: String,
-    val budget: StateFlow<Int>
+    val tripId: Long,
+    val expense: StateFlow<Int>
 )
 
 class OverviewViewModel(
@@ -18,6 +18,6 @@ class OverviewViewModel(
         get() = OverviewUiState(
             title = "Trip Overview",
             tripId = tripViewModel.tripId,
-            budget = tripViewModel.budget
+            expense = tripViewModel.expense
         )
 }

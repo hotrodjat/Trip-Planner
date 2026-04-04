@@ -25,10 +25,10 @@ fun OverviewScreen() {
     Column {
         Text(uiState.title)
         Text("Trip ID: ${uiState.tripId}")
-        Text("Budget: \$${uiState.budget.collectAsState().value}")
+        Text("Expense: \$${uiState.expense.collectAsState().value}")
 
-        Button(onClick = { tripViewModel.addToBudget(50) }) {
-            Text("Add $50 to budget")
+        Button(onClick = { tripViewModel.addToExpense(50) }) {
+            Text("Add $50 to expense")
         }
     }
 }

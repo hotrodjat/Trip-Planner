@@ -12,14 +12,21 @@ class TripViewModelFactory(
     private val application: Application
 ) : ViewModelProvider.Factory {
 
+    private val dependencies by lazy { TripDependencies(application) }
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(TripViewModel::class.java)) {
             val db = DatabaseProvider.get(application)
             return TripViewModel(
                 savedStateHandle,
-                repository = TripRepository(
+                TripRepository(
                     tripDao = db.tripDao(),
-                    budgetDao = db.budgetDao()
+                    expenseDao = db.expenseDao(),
+                    logisticsRepository = dependencies.logisticsRepository,
+                    scheduleRepository = dependencies.scheduleRepository,
+                    personRepository = dependencies.personRepository,
+                    expenseRepository = dependencies.expenseRepository,
+                    expenseSplitRepository = dependencies.expenseSplitRepository
                 )
             ) as T
         }

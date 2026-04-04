@@ -1,5 +1,6 @@
 package com.example.tripplanner.ui.theme.trip.logistics
 
+import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,16 +19,23 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.tripplanner.data.entity.LogisticsEntity
+import com.example.tripplanner.data.repository.LogisticsRepository
 import com.example.tripplanner.ui.theme.trip.LocalTripViewModel
+import com.example.tripplanner.ui.theme.trip.TripDependencies
 
 @Composable
 fun LogisticsScreen() {
     val tripViewModel = LocalTripViewModel.current
+    val application = androidx.compose.ui.platform.LocalContext.current.applicationContext
 
     // Trip-scoped LogisticsViewModel
     val viewModel: LogisticsViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { LogisticsViewModel(tripViewModel) }
+            initializer {
+                val dependencies = TripDependencies(application as Application)
+                LogisticsViewModel(tripViewModel, dependencies.logisticsRepository)
+            }
         }
     )
 
@@ -48,7 +56,7 @@ fun LogisticsScreen() {
 }
 
 @Composable
-private fun SectionCard(title: String, items: List<LogisticsItem>) {
+private fun SectionCard(title: String, items: List<LogisticsEntity>) {
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -66,7 +74,7 @@ private fun SectionCard(title: String, items: List<LogisticsItem>) {
             } else {
                 items.forEach { item ->
                     Text(
-                        text = item.description,
+                        text = "${item.provider ?: "Unknown"} - ${item.referenceNumber ?: "No ref"}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

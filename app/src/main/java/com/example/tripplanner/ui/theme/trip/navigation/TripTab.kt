@@ -10,9 +10,8 @@ sealed class TripTab(
     val icon: ImageVector
 ) {
     object Overview : TripTab("overview", "Overview", Icons.Default.Home)
-    object Budget : TripTab("budget", "Budget", Icons.Default.Info)
-    object Logistics : TripTab("logistics/{tripId}", "Logistics", Icons.Default.LocationOn)
-    object Schedule : TripTab("schedule/{tripId}", "Schedule", Icons.Default.Info)
-    object More : TripTab("more/{tripId}", "More", Icons.Default.Info)
+    object Expense : TripTab("expense", "Expense", Icons.Default.Info)
+    object Logistics : TripTab("logistics", "Logistics", Icons.Default.LocationOn)
+    object Schedule : TripTab("schedule", "Schedule", Icons.Default.Info)
+    object More : TripTab("more", "More", Icons.Default.Info)
 }
-
