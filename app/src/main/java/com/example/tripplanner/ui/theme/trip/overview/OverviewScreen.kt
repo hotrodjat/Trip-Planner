@@ -27,7 +27,7 @@ fun OverviewScreen() {
         Text("Trip ID: ${uiState.tripId}")
         Text("Expense: \$${uiState.expense.collectAsState().value}")
 
-        Button(onClick = { tripViewModel.addToExpense(50) }) {
+        Button(onClick = { tripViewModel.addToExpense(50, "Test Expense") }) {
             Text("Add $50 to expense")
         }
     }

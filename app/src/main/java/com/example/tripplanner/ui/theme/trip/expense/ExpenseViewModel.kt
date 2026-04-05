@@ -54,6 +54,10 @@ class ExpenseViewModel(
             setError("Expense amount must be greater than zero")
             return
         }
+        if (expense.name.isBlank()) {
+            setError("Expense name must not be blank")
+            return
+        }
 
         val expenseWithTrip = expense.copy(tripId = tripId)
 
@@ -101,6 +105,10 @@ class ExpenseViewModel(
             setError("Expense amount must be greater than zero")
             return
         }
+        if (expense.name.isBlank()) {
+            setError("Expense name must not be blank")
+            return
+        }
 
         if (expense.expenseId <= 0) {
             setError("Invalid expense ID for update")
@@ -134,5 +142,3 @@ class ExpenseViewModel(
         _filterByPerson.value = personId
     }
 }
-
-
