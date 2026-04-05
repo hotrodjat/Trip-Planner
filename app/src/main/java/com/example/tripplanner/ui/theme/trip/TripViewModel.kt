@@ -126,7 +126,7 @@ class TripViewModel(
         }
     }
 
-    fun addToExpense(amount: Int) {
+    fun addToExpense(amount: Int, name: String) {
         if (amount <= 0) {
             setError("Amount must be greater than zero")
             return
@@ -136,7 +136,7 @@ class TripViewModel(
             try {
                 clearError()
                 _isLoading.value = true
-                repository.addToExpense(tripId, amount)
+                repository.addToExpense(tripId, amount, name)
             } catch (e: Exception) {
                 val errorMsg = e.message ?: "Failed to add expense"
                 setError(errorMsg)

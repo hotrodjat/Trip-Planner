@@ -51,14 +51,15 @@ class TripRepository(
     suspend fun insertExpenseWithSplits(
         tripId: Long,
         total: Int,
+        name: String,
         splits: List<ExpenseSplitEntity>
     ) {
-        val expense = ExpenseEntity(tripId = tripId, total = total, paidByPersonId = null)
+        val expense = ExpenseEntity(tripId = tripId, total = total, name = name, paidByPersonId = null)
         val expenseId = expenseDao.insertExpense(expense)
         // Note: ExpenseSplitDao methods need to be added separately
     }
 
-    suspend fun addToExpense(tripId: Long, amount: Int) {
+    suspend fun addToExpense(tripId: Long, amount: Int, name: String) {
         if (amount <= 0) {
             throw IllegalArgumentException("Amount must be greater than zero")
         }
@@ -72,6 +73,7 @@ class TripRepository(
             ExpenseEntity(
                 tripId = tripId,
                 total = amount,
+                name = name,
                 paidByPersonId = null,
                 notes = null
             )

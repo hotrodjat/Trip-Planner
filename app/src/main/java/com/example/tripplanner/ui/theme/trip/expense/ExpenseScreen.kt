@@ -165,12 +165,13 @@ fun ExpenseScreen() {
                 onDismiss = {
                     showAddDialog = false
                 },
-                onAdd = { amount, notes ->
+                onAdd = { amount, name, notes ->
                     if (amount.isNotBlank()) {
                         val expenseAmount = amount.toIntOrNull() ?: 0
                         if (expenseAmount > 0) {
                             val expense = ExpenseEntity(
                                 tripId = tripViewModel.tripId,
+                                name = name,
                                 total = expenseAmount,
                                 paidByPersonId = null,
                                 notes = notes.ifBlank { null }
@@ -215,7 +216,11 @@ fun ExpenseCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    "$$${expense.total}",
+                    expense.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    "$${expense.total}",
                     style = MaterialTheme.typography.titleMedium
                 )
                 if (!expense.notes.isNullOrBlank()) {
@@ -226,7 +231,7 @@ fun ExpenseCard(
                     )
                 }
                 Text(
-                    "ID: ${expense.expenseId}",
+                    "Paid by: ${expense.paidByPersonId}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline
                 )
@@ -246,9 +251,10 @@ fun ExpenseCard(
 @Composable
 fun AddExpenseDialog(
     onDismiss: () -> Unit,
-    onAdd: (amount: String, notes: String) -> Unit
+    onAdd: (amount: String, name: String, notes: String) -> Unit
 ) {
     var amount by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
 
     Box(
@@ -269,6 +275,15 @@ fun AddExpenseDialog(
                 Text(
                     "Add Expense",
                     style = MaterialTheme.typography.headlineSmall
+                )
+
+                // Name input
+                androidx.compose.material3.TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
 
                 // Amount input
@@ -302,7 +317,7 @@ fun AddExpenseDialog(
                     }
 
                     Button(
-                        onClick = { onAdd(amount, notes) },
+                        onClick = { onAdd(amount, name,notes) },
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Add")

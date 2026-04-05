@@ -29,6 +29,7 @@ data class ExpenseEntity(
     @PrimaryKey(autoGenerate = true)
     val expenseId: Long = 0L,
     val tripId: Long,
+    val name: String,
     val total: Int,
     val paidByPersonId: Long?,
     val notes: String? = null,

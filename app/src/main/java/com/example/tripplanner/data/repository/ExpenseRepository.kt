@@ -23,6 +23,7 @@ class ExpenseRepository(
     suspend fun addExpense(expense: ExpenseEntity) {
         require(expense.tripId > 0) { "Invalid tripId: ${expense.tripId}" }
         require(expense.total > 0) { "Expense total must be greater than zero" }
+        require(expense.name.isNotBlank()) { "Expense name must not be blank" }
         expenseDao.insertExpense(expense)
     }
 
@@ -44,7 +45,7 @@ class ExpenseRepository(
     suspend fun updateExpense(expense: ExpenseEntity) {
         require(expense.expenseId > 0) { "Invalid expenseId for update: ${expense.expenseId}" }
         require(expense.total > 0) { "Expense total must be greater than zero" }
+        require(expense.name.isNotBlank()) { "Expense name must not be blank" }
         expenseDao.insertExpense(expense) // Room replaces on conflict
     }
 }
-

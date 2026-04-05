@@ -1,8 +1,9 @@
 package com.example.tripplanner.data.db
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.tripplanner.data.dao.*
 import com.example.tripplanner.data.entity.*
 
@@ -15,8 +16,7 @@ import com.example.tripplanner.data.entity.*
         PersonEntity::class,
         ExpenseSplitEntity::class
     ],
-    version = 4,
-//    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    version = 5,
     exportSchema = true
 )
 abstract class TripDatabase : RoomDatabase() {
