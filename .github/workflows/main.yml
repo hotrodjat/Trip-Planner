@@ -1,22 +1,34 @@
-name: Import Issues
+name: Import Issues (Advanced)
 on:
-  workflow_dispatch:
-    inputs:
-      file_path:
-        description: 'Path to the issue file'
-        required: true
-        default: 'issues.csv'
+  pull_request:
+    paths:
+      - 'data/issues.json'
 
 jobs:
-  import-issues:
+  dry-run-import:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Import Issues
+      - name: Dry Run Issue Import
         uses: dsanchezcr/issue-importer-action@v1.0.0
         with:
-          file-path: ${{ github.event.inputs.file_path }}
-          file-format: csv
+          file-path: 'data/issues.json'
+          file-format: json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: true
+
+  import-issues:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import Issues
+        uses: dsanchezcr/issue-importer-action@v1
+        with:
+          file-path: 'data/issues.json'
+          file-format: json
           github-token: ${{ secrets.GITHUB_TOKEN }}
