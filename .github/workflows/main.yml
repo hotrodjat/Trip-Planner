@@ -6,7 +6,10 @@ on:
         description: 'Path to the issue file'
         required: true
         default: 'issues.csv'
-
+permissions:
+  contents: read
+  issues: write
+  
 jobs:
   import-issues:
     runs-on: ubuntu-latest
