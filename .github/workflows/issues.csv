@@ -1,0 +1,72 @@
+title,body,labels,assignees,milestone,parent
+"Display total trip expenses summary","As a user, I want to see the total expenses for the trip so that I can understand overall spending.\n\nAcceptance Criteria:\n- Total expense amount is displayed at the top of the Expense tab\n- Value updates when expenses are added, edited, or deleted\n- Handles empty state (shows $0 or placeholder)\n- Value reflects sum of all expenses tied to the tripId","user story","hotrodjat","Expense",""
+"Implement query to calculate total expenses by tripId","Write a database query (Room DAO or SQL) that aggregates the sum of all expense totals filtered by tripId. Ensure null-safe aggregation and efficient performance for larger datasets.","enhancement","hotrodjat","Expense","Display total trip expenses summary"
+"Expose aggregated total in ViewModel","Add a function or LiveData/StateFlow in the ViewModel that retrieves and exposes the total expense value from the repository layer. Ensure it updates reactively when underlying data changes.","enhancement","hotrodjat","Expense","Display total trip expenses summary"
+"Build UI component to display total expenses","Create a composable or UI component that renders the total expense value prominently. Include formatting (currency), styling, and support for loading/empty states.","enhancement","hotrodjat","Expense","Display total trip expenses summary"
+
+"Display per-person spending vs budget","As a user, I want to see how much each person has spent compared to their budget so that I can track contributions.\n\nAcceptance Criteria:\n- Each person shows total spent and budget amount\n- Data is accurate and reflects all expenses\n- Updates dynamically when expenses change\n- Handles cases where budget is missing (shows default or placeholder)","user story","hotrodjat","Expense",""
+"Aggregate expenses per person","Write logic (SQL or repository layer) to group expenses by personId and calculate total amount spent per person. Ensure compatibility with split logic if needed.","enhancement","hotrodjat","Expense","Display per-person spending vs budget"
+"Join expense data with budget data","Combine aggregated expense totals with budget data per person (via JOIN or ViewModel mapping). Ensure correct matching on personId and null-safe handling.","enhancement","hotrodjat","Expense","Display per-person spending vs budget"
+"Map aggregated data into UI model","Transform combined expense and budget data into a UI-friendly model (e.g., data class) that includes person name, spent amount, and budget.","enhancement","hotrodjat","Expense","Display per-person spending vs budget"
+
+"Display budget progress bars per person","As a user, I want to see a visual progress bar for each person’s budget usage so that I can quickly assess spending.\n\nAcceptance Criteria:\n- Progress bar reflects percentage of spent vs budget\n- Updates dynamically with data changes\n- Handles divide-by-zero or missing budget cases gracefully\n- UI is visually consistent across users","user story","hotrodjat","Expense",""
+"Compute budget usage percentage per person","Implement logic to calculate percentage = spent / budget for each person. Ensure proper handling of zero or null budget values.","enhancement","hotrodjat","Expense","Display budget progress bars per person"
+"Build reusable progress bar UI component","Create a reusable UI component (Compose or XML) for displaying progress bars with labels and percentages.","enhancement","hotrodjat","Expense","Display budget progress bars per person"
+"Bind progress data to UI components","Connect ViewModel data to progress bar UI, ensuring recomposition/reactivity when values change.","enhancement","hotrodjat","Expense","Display budget progress bars per person"
+
+"Display list of all total expenses","As a user, I want to see a list of all expenses so that I can review trip spending.\n\nAcceptance Criteria:\n- Expenses are displayed in a scrollable list\n- Each item shows name, total, and payer\n- List updates when data changes\n- Empty state is handled gracefully","user story","hotrodjat","Expense",""
+"Fetch all expenses by tripId","Implement DAO/repository method to retrieve all expenses associated with a tripId, ordered by createdAt by default.","enhancement","hotrodjat","Expense","Display list of all total expenses"
+"Build expense preview card UI","Create a UI card component displaying expense name, total amount, and payer. Ensure proper layout and styling.","enhancement","hotrodjat","Expense","Display list of all total expenses"
+"Bind expense data to list UI","Connect fetched expense data to a LazyColumn/RecyclerView, ensuring efficient rendering and updates.","enhancement","hotrodjat","Expense","Display list of all total expenses"
+
+"View detailed information for a selected expense","As a user, I want to view detailed information about an expense so that I can understand all associated data.\n\nAcceptance Criteria:\n- Clicking an expense opens a detail modal or screen\n- Displays name, total, payer, logistics item (optional), split, and notes\n- UI is consistent and scrollable if needed","user story","hotrodjat","Expense",""
+"Create expense detail modal or screen","Design and implement a modal or navigation destination for displaying detailed expense information.","enhancement","hotrodjat","Expense","View detailed information for a selected expense"
+"Implement navigation to detail view","Add click handlers and navigation logic to open the detail view when a user selects an expense.","enhancement","hotrodjat","Expense","View detailed information for a selected expense"
+"Populate detail view with full expense data","Fetch and bind all relevant fields (including optional logistics and split data) into the detail UI.","enhancement","hotrodjat","Expense","View detailed information for a selected expense"
+
+"Display split expenses per person","As a user, I want to see how each expense is split per person so that I know individual shares.\n\nAcceptance Criteria:\n- Each expense shows per-person share\n- Data reflects correct split calculations\n- Updates dynamically when data changes","user story","hotrodjat","Expense",""
+"Compute per-person share for each expense","Implement logic to calculate each person's share of an expense based on split rules (equal/custom).","enhancement","hotrodjat","Expense","Display split expenses per person"
+"Transform split data into UI-friendly format","Map split calculation results into a structure suitable for display in the UI (e.g., per-person rows).","enhancement","hotrodjat","Expense","Display split expenses per person"
+
+"View detailed split breakdown for an expense","As a user, I want to see detailed split information so that I understand how costs are divided.\n\nAcceptance Criteria:\n- Detail view includes split breakdown per person\n- Matches total expense amount\n- Reuses consistent UI patterns","user story","hotrodjat","Expense",""
+"Reuse expense detail UI for split view","Adapt existing detail UI to support split-focused display without duplication of code.","enhancement","hotrodjat","Expense","View detailed split breakdown for an expense"
+"Ensure split breakdown is displayed in detail view","Extend data binding to include per-person split values and display them clearly.","enhancement","hotrodjat","Expense","View detailed split breakdown for an expense"
+
+"Create a new expense with full details","As a user, I want to add a new expense so that I can track spending.\n\nAcceptance Criteria:\n- Plus button is visible and accessible\n- Form captures all required fields\n- Validation prevents invalid input\n- New expense appears in list after creation","user story","hotrodjat","Expense",""
+"Add floating action button for expense creation","Add a FAB (+) to the Expense screen that triggers navigation to the create expense form.","enhancement","hotrodjat","Expense","Create a new expense with full details"
+"Build expense creation form UI","Design and implement form fields for name, total, payer, split, optional logistics item, and notes.","enhancement","hotrodjat","Expense","Create a new expense with full details"
+"Implement input validation for expense form","Add validation rules (non-empty fields, valid amounts, valid splits) and show error messages to users.","enhancement","hotrodjat","Expense","Create a new expense with full details"
+"Insert new expense and split records into database","Persist expense and associated split data using DAO methods, ensuring referential integrity.","enhancement","hotrodjat","Expense","Create a new expense with full details"
+"Refresh UI after expense creation","Trigger ViewModel/state updates so the new expense appears immediately in the list.","enhancement","hotrodjat","Expense","Create a new expense with full details"
+
+"Edit an existing expense","As a user, I want to edit an expense so that I can correct mistakes.\n\nAcceptance Criteria:\n- Edit icon is visible on expense cards\n- Form is pre-filled with existing data\n- Changes persist after saving\n- List updates automatically","user story","hotrodjat","Expense",""
+"Add edit icon to expense preview card","Update UI to include an edit (pencil) icon on each expense card in total expense view.","enhancement","hotrodjat","Expense","Edit an existing expense"
+"Pre-fill edit form with existing expense data","Load selected expense data into the form fields for editing.","enhancement","hotrodjat","Expense","Edit an existing expense"
+"Update expense and split records in database","Implement DAO update methods for expense and associated splits, ensuring consistency.","enhancement","hotrodjat","Expense","Edit an existing expense"
+"Refresh UI after editing expense","Ensure UI reflects updated data immediately after saving changes.","enhancement","hotrodjat","Expense","Edit an existing expense"
+
+"Delete an existing expense","As a user, I want to delete an expense so that I can remove incorrect entries.\n\nAcceptance Criteria:\n- Delete icon is visible\n- Confirmation dialog is shown before deletion\n- Expense is removed from list\n- Associated split records are also deleted","user story","hotrodjat","Expense",""
+"Add delete icon to expense preview card","Add a delete (trash) icon to each expense card in the total expenses view.","enhancement","hotrodjat","Expense","Delete an existing expense"
+"Implement confirmation dialog before deletion","Show a modal dialog prompting user confirmation before deleting an expense.","enhancement","hotrodjat","Expense","Delete an existing expense"
+"Delete expense and related split records from database","Implement DAO logic to delete expense and cascade delete associated splits.","enhancement","hotrodjat","Expense","Delete an existing expense"
+"Refresh UI after deleting expense","Ensure the UI updates immediately after deletion to remove the expense from the list.","enhancement","hotrodjat","Expense","Delete an existing expense"
+
+"Filter total expenses by payer","As a user, I want to filter expenses by payer so that I can focus on specific contributions.\n\nAcceptance Criteria:\n- Filter control is available\n- Selecting a payer updates the list\n- Clearing filter restores full list","user story","hotrodjat","Expense",""
+"Build payer filter UI control","Create dropdown/chips allowing user to select payer filter.","enhancement","hotrodjat","Expense","Filter total expenses by payer"
+"Store and manage selected filter state","Maintain filter selection in ViewModel and persist across recompositions.","enhancement","hotrodjat","Expense","Filter total expenses by payer"
+"Apply filtering logic to expense list","Filter displayed expenses based on selected payer using ViewModel or query-level filtering.","enhancement","hotrodjat","Expense","Filter total expenses by payer"
+
+"Filter split expenses by person","As a user, I want to filter split expenses by person so that I can view individual shares.\n\nAcceptance Criteria:\n- Filter applies to split expense view\n- List updates correctly based on selection","user story","hotrodjat","Expense",""
+"Extend filtering logic to split data","Apply selected person filter to computed split dataset before rendering UI.","enhancement","hotrodjat","Expense","Filter split expenses by person"
+
+"Sort expenses by creation date","As a user, I want to sort expenses chronologically so that I can view them in order.\n\nAcceptance Criteria:\n- Supports ascending and descending order\n- Sorting persists during session\n- Applies to both total and split views","user story","hotrodjat","Expense",""
+"Add sort control to UI","Create toggle or dropdown to switch between ascending/descending sort.","enhancement","hotrodjat","Expense","Sort expenses by creation date"
+"Apply sorting logic to expense data","Sort expense list in ViewModel or via DAO query using createdAt field.","enhancement","hotrodjat","Expense","Sort expenses by creation date"
+
+"Group total expenses by payer","As a user, I want to group expenses by payer so that I can understand spending distribution.\n\nAcceptance Criteria:\n- Expenses are grouped under payer headers\n- Groups update dynamically\n- Works with filtering and sorting","user story","hotrodjat","Expense",""
+"Transform expense list into grouped structure","Convert flat expense list into grouped map keyed by payer.","enhancement","hotrodjat","Expense","Group total expenses by payer"
+"Add grouped section headers to UI","Render section headers and grouped items in list UI.","enhancement","hotrodjat","Expense","Group total expenses by payer"
+
+"Group split expenses by person","As a user, I want to group split expenses by person so that I can see individual cost breakdowns.\n\nAcceptance Criteria:\n- Split expenses grouped by person\n- Accurate aggregation per group\n- UI clearly separates groups","user story","hotrodjat","Expense",""
+"Transform split data into grouped structure","Group computed split data by personId into UI-friendly sections.","enhancement","hotrodjat","Expense","Group split expenses by person"
+"Update UI to render grouped split sections","Modify split expense UI to display grouped sections with headers.","enhancement","hotrodjat","Expense","Group split expenses by person"
