@@ -17,6 +17,12 @@ interface LogisticsDao {
     @Query("SELECT * FROM logistics WHERE logisticsId = :logisticsId")
     suspend fun getLogisticsById(logisticsId: Long): LogisticsEntity?
 
+    @Query("SELECT * FROM logistics WHERE tripId = :tripId AND type = :type ORDER BY logisticsId DESC")
+    fun getLogisticsForTripByType(tripId: Long, type: String): Flow<List<LogisticsEntity>>
+
+    @Query("SELECT * FROM logistics WHERE tripId = :tripId AND location = :location ORDER BY logisticsId DESC")
+    fun getLogisticsForTripByLocation(tripId: Long, location: String): Flow<List<LogisticsEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLogistics(logistics: LogisticsEntity): Long
 

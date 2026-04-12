@@ -23,6 +23,12 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE tripId = :tripId AND createdAt BETWEEN :startTime AND :endTime ORDER BY createdAt DESC")
     fun getExpensesForTripInTimeRange(tripId: Long, startTime: Long, endTime: Long): Flow<List<ExpenseEntity>>
 
+    @Query("SELECT * FROM expenses WHERE logisticsId = :logisticsId ORDER BY createdAt DESC")
+    fun getExpensesForLogistics(logisticsId: Long): Flow<List<ExpenseEntity>>
+
+    @Query("SELECT * FROM expenses WHERE tripId = :tripId AND logisticsId = :logisticsId ORDER BY createdAt DESC")
+    fun getExpensesForTripAndLogistics(tripId: Long, logisticsId: Long): Flow<List<ExpenseEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExpense(expense: ExpenseEntity): Long
 
@@ -34,4 +40,7 @@ interface ExpenseDao {
 
     @Query("DELETE FROM expenses WHERE tripId = :tripId")
     suspend fun deleteExpensesForTrip(tripId: Long)
+
+    @Query("DELETE FROM expenses WHERE logisticsId = :logisticsId")
+    suspend fun deleteExpensesForLogistics(logisticsId: Long)
 }

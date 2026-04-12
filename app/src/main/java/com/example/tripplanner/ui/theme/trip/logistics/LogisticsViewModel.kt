@@ -96,6 +96,7 @@ class LogisticsViewModel(
                 
                 val logistics = LogisticsEntity(
                     tripId = tripId,
+                    title = title,
                     type = type,
                     provider = provider ?: title, // Use title as provider if not specified
                     referenceNumber = referenceNumber?.takeIf { it.isNotBlank() },

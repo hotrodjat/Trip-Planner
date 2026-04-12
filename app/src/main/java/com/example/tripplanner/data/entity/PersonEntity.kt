@@ -25,5 +25,6 @@ data class PersonEntity(
     val tripId: Long? = null,
     val firstName: String,
     val lastName: String,
+    val personalBudget: Int = 0,
     val notes: String? = null
 )

@@ -94,6 +94,12 @@ class TripRepository(
     fun getLogisticsForTripByType(tripId: Long, type: String): Flow<List<LogisticsEntity>> =
         logisticsRepository.getLogisticsForTripByType(tripId, type)
 
+    fun getLogisticsForTripByLocation(tripId: Long, location: String): Flow<List<LogisticsEntity>> =
+        logisticsRepository.getLogisticsForTripByLocation(tripId, location)
+
+    fun getLogisticsForTripByPeople(tripId: Long, personId: Long): Flow<List<LogisticsEntity>> =
+        logisticsRepository.getLogisticsForTripByPerson(tripId, personId)
+
     // Schedule delegation methods
     suspend fun deleteSchedule(scheduleId: Long) {
         scheduleRepository.deleteSchedule(scheduleId)
@@ -144,6 +150,12 @@ class TripRepository(
     fun getExpensesForTripInTimeRange(tripId: Long, startTime: Long, endTime: Long) = 
         expenseRepository.getExpensesForTripInTimeRange(tripId, startTime, endTime)
 
+    fun getExpensesForLogistics(logisticsId: Long) =
+        expenseRepository.getExpensesForLogistics(logisticsId)
+
+    fun getExpensesForTripAndLogistics(tripId: Long, logisticsId: Long) =
+        expenseRepository.getExpensesForTripAndLogistics(tripId, logisticsId)
+
     suspend fun getExpenseById(expenseId: Long) = expenseRepository.getExpenseById(expenseId)
 
     suspend fun addExpense(expense: ExpenseEntity) {
@@ -160,6 +172,10 @@ class TripRepository(
 
     suspend fun deleteExpensesForTrip(tripId: Long) {
         expenseRepository.deleteExpensesForTrip(tripId)
+    }
+
+    suspend fun deleteExpensesForLogistics(logisticsId: Long) {
+        expenseRepository.deleteExpensesForLogistics(logisticsId)
     }
 
     suspend fun updateExpense(expense: ExpenseEntity) {
