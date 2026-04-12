@@ -31,5 +31,11 @@ interface PersonDao {
 
     @Query("DELETE FROM people WHERE tripId = :tripId")
     suspend fun deletePeopleForTrip(tripId: Long)
+
+    @Query("SELECT * FROM people WHERE tripId = :tripId AND personalBudget > 0 ORDER BY firstName ASC, lastName ASC")
+    fun getPeopleForTripWithBudget(tripId: Long): Flow<List<PersonEntity>>
+
+    @Query("UPDATE people SET personalBudget = :budget WHERE personId = :personId")
+    suspend fun updatePersonalBudget(personId: Long, budget: Int)
 }
 

@@ -42,7 +42,17 @@ class PersonRepository(
         require(person.personId > 0) { "Invalid personId for update: ${person.personId}" }
         require(person.firstName.isNotBlank()) { "First name cannot be blank" }
         require(person.lastName.isNotBlank()) { "Last name cannot be blank" }
+        require(person.personalBudget >= 0) { "Personal budget cannot be negative" }
         personDao.insertPerson(person) // Room replaces on conflict
+    }
+
+    fun getPeopleForTripWithBudget(tripId: Long): Flow<List<PersonEntity>> =
+        personDao.getPeopleForTripWithBudget(tripId)
+
+    suspend fun updatePersonalBudget(personId: Long, budget: Int) {
+        require(personId > 0) { "Invalid personId: $personId" }
+        require(budget >= 0) { "Personal budget cannot be negative" }
+        personDao.updatePersonalBudget(personId, budget)
     }
 }
 

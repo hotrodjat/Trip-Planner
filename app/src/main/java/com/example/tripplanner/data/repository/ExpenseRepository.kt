@@ -17,6 +17,12 @@ class ExpenseRepository(
     fun getExpensesForTripInTimeRange(tripId: Long, startTime: Long, endTime: Long): Flow<List<ExpenseEntity>> =
         expenseDao.getExpensesForTripInTimeRange(tripId, startTime, endTime)
 
+    fun getExpensesForLogistics(logisticsId: Long): Flow<List<ExpenseEntity>> =
+        expenseDao.getExpensesForLogistics(logisticsId)
+
+    fun getExpensesForTripAndLogistics(tripId: Long, logisticsId: Long): Flow<List<ExpenseEntity>> =
+        expenseDao.getExpensesForTripAndLogistics(tripId, logisticsId)
+
     suspend fun getExpenseById(expenseId: Long): ExpenseEntity? =
         expenseDao.getExpenseById(expenseId)
 
@@ -40,6 +46,11 @@ class ExpenseRepository(
     suspend fun deleteExpensesForTrip(tripId: Long) {
         require(tripId > 0) { "Invalid tripId: $tripId" }
         expenseDao.deleteExpensesForTrip(tripId)
+    }
+
+    suspend fun deleteExpensesForLogistics(logisticsId: Long) {
+        require(logisticsId > 0) { "Invalid logisticsId: $logisticsId" }
+        expenseDao.deleteExpensesForLogistics(logisticsId)
     }
 
     suspend fun updateExpense(expense: ExpenseEntity) {

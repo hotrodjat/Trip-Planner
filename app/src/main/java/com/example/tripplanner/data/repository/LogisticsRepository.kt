@@ -15,8 +15,15 @@ class LogisticsRepository(
     fun getLogisticsForTripByType(tripId: Long, type: String): Flow<List<LogisticsEntity>> =
         getLogisticsForTrip(tripId).map { it.filter { entity -> entity.type == type } }
 
+    fun getLogisticsForTripByLocation(tripId: Long, location: String): Flow<List<LogisticsEntity>> =
+        getLogisticsForTrip(tripId).map { it.filter { entity -> entity.location == location } }
+
+    fun getLogisticsForTripByPerson(tripId: Long, personId: Long): Flow<List<LogisticsEntity>> =
+        getLogisticsForTrip(tripId).map { it.filter { entity -> entity.people.contains(personId) } }
+
     suspend fun addLogistics(logistics: LogisticsEntity) {
         require(logistics.tripId > 0) { "Invalid tripId: ${logistics.tripId}" }
+        require(logistics.title.isNotBlank()) { "Logistics title cannot be blank" }
         require(logistics.type.isNotBlank()) { "Logistics type cannot be blank" }
         require(logistics.provider?.isNotBlank() != false) { "Provider cannot be blank if provided" }
         logisticsDao.insertLogistics(logistics)
