@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.map
 
 class TripRepository(
     private val tripDao: TripDao,
-    private val expenseDao: ExpenseDao,
+ //    private val expenseDao: ExpenseDao,
     private val logisticsRepository: LogisticsRepository,
     private val scheduleRepository: ScheduleRepository,
     private val personRepository: PersonRepository,
@@ -23,7 +23,7 @@ class TripRepository(
     fun getTrip(tripId: Long) = tripDao.getTrip(tripId)
 
     fun getExpense(tripId: Long): Flow<Int> =
-        expenseDao.getExpensesForTrip(tripId).map { expenses -> expenses.sumOf { it.total } }
+        expenseRepository.getExpensesForTrip(tripId).map { expenses -> expenses.sumOf { it.total } }
     
     fun getScheduleForTrip(tripId: Long) =
         scheduleRepository.getScheduleForTrip(tripId)
@@ -49,16 +49,17 @@ class TripRepository(
 
     @Transaction
     suspend fun insertExpenseWithSplits(
-        tripId: Long,
-        total: Int,
-        name: String,
+        expense: ExpenseEntity,
         splits: List<ExpenseSplitEntity>
     ) {
-        val expense = ExpenseEntity(tripId = tripId, total = total, name = name, paidByPersonId = null)
-        val expenseId = expenseDao.insertExpense(expense)
-        // Note: ExpenseSplitDao methods need to be added separately
+        val expenseId = expenseRepository.addExpense(expense)
+        if (splits.isNotEmpty()) {
+            val splitsWithId = splits.map { it.copy(expenseId = expenseId) }
+            expenseSplitRepository.addSplits(splitsWithId)
+        }
     }
 
+//    TODO: remove this function
     suspend fun addToExpense(tripId: Long, amount: Int, name: String) {
         if (amount <= 0) {
             throw IllegalArgumentException("Amount must be greater than zero")
@@ -69,7 +70,7 @@ class TripRepository(
             tripDao.insertTrip(TripEntity(tripId = tripId, title = "Trip $tripId"))
         }
 
-        expenseDao.insertExpense(
+        expenseRepository.addExpense(
             ExpenseEntity(
                 tripId = tripId,
                 total = amount,

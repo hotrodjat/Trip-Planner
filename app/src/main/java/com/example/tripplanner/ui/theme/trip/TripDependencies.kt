@@ -2,6 +2,7 @@ package com.example.tripplanner.ui.theme.trip
 
 import android.app.Application
 import com.example.tripplanner.data.db.DatabaseProvider
+import com.example.tripplanner.data.repository.TripRepository
 import com.example.tripplanner.data.repository.ExpenseRepository
 import com.example.tripplanner.data.repository.ExpenseSplitRepository
 import com.example.tripplanner.data.repository.LogisticsRepository
@@ -16,4 +17,6 @@ class TripDependencies(private val application: Application) {
     val personRepository by lazy { PersonRepository(db.personDao()) }
     val expenseRepository by lazy { ExpenseRepository(db.expenseDao()) }
     val expenseSplitRepository by lazy { ExpenseSplitRepository(db.expenseSplitDao()) }
+    val tripRepository by lazy { TripRepository(db.tripDao(), logisticsRepository, scheduleRepository, personRepository, expenseRepository, expenseSplitRepository) }
+
 }

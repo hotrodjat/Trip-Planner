@@ -26,11 +26,11 @@ class ExpenseRepository(
     suspend fun getExpenseById(expenseId: Long): ExpenseEntity? =
         expenseDao.getExpenseById(expenseId)
 
-    suspend fun addExpense(expense: ExpenseEntity) {
+    suspend fun addExpense(expense: ExpenseEntity): Long {
         require(expense.tripId > 0) { "Invalid tripId: ${expense.tripId}" }
         require(expense.total > 0) { "Expense total must be greater than zero" }
         require(expense.name.isNotBlank()) { "Expense name must not be blank" }
-        expenseDao.insertExpense(expense)
+        return expenseDao.insertExpense(expense)
     }
 
     suspend fun deleteExpense(expense: ExpenseEntity) {
