@@ -21,7 +21,6 @@ class TripViewModelFactory(
                 savedStateHandle,
                 TripRepository(
                     tripDao = db.tripDao(),
-                    expenseDao = db.expenseDao(),
                     logisticsRepository = dependencies.logisticsRepository,
                     scheduleRepository = dependencies.scheduleRepository,
                     personRepository = dependencies.personRepository,

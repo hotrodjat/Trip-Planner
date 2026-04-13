@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.tripplanner.data.entity.ExpenseEntity
 import com.example.tripplanner.data.entity.ExpenseSplitEntity
 import com.example.tripplanner.data.entity.ExpenseWithSplits
+import com.example.tripplanner.data.entity.LogisticsEntity
 import com.example.tripplanner.data.entity.PersonEntity
 import com.example.tripplanner.data.entity.ScheduleEntity
 import com.example.tripplanner.data.repository.TripRepository
@@ -61,6 +62,14 @@ class TripViewModel(
 
     val expenses: StateFlow<List<ExpenseEntity>> =
         repository.getExpensesForTrip(tripId)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
+
+    val logistics: StateFlow<List<LogisticsEntity>> =
+        repository.getLogisticsForTrip(tripId)
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
