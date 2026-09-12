@@ -22,6 +22,18 @@ class TripRepository(
 
     fun getTrip(tripId: Long) = tripDao.getTrip(tripId)
 
+    suspend fun addTrip(trip: TripEntity): Long {
+        return tripDao.insertTrip(trip)
+    }
+
+    suspend fun updateTrip(trip: TripEntity) {
+        tripDao.updateTrip(trip)
+    }
+
+    suspend fun deleteTrip(trip: TripEntity) {
+        tripDao.deleteTrip(trip)
+    }
+
     fun getExpense(tripId: Long): Flow<Int> =
         expenseRepository.getExpensesForTrip(tripId).map { expenses -> expenses.sumOf { it.total } }
     
@@ -56,6 +68,18 @@ class TripRepository(
         if (splits.isNotEmpty()) {
             val splitsWithId = splits.map { it.copy(expenseId = expenseId) }
             expenseSplitRepository.addSplits(splitsWithId)
+        }
+    }
+
+    @Transaction
+    suspend fun updateExpenseWithSplits(
+        expense: ExpenseEntity,
+        splits: List<ExpenseSplitEntity>
+    ) {
+        expenseRepository.updateExpense(expense)
+        expenseSplitRepository.deleteSplitsForExpense(expense.expenseId)
+        if (splits.isNotEmpty()) {
+            expenseSplitRepository.addSplits(splits.map { it.copy(expenseId = expense.expenseId) })
         }
     }
 
@@ -200,5 +224,9 @@ class TripRepository(
 
     suspend fun deleteSplitsForExpense(expenseId: Long) {
         expenseSplitRepository.deleteSplitsForExpense(expenseId)
+    }
+
+    suspend fun updateLogistics(logistics: LogisticsEntity) {
+        logisticsRepository.updateLogistics(logistics)
     }
 }

@@ -1,6 +1,5 @@
 package com.example.tripplanner.ui.theme.trip.expense
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tripplanner.data.entity.ExpenseEntity
 import com.example.tripplanner.data.entity.ExpenseSplitEntity
@@ -8,6 +7,7 @@ import com.example.tripplanner.data.entity.LogisticsEntity
 import com.example.tripplanner.data.entity.PersonEntity
 import com.example.tripplanner.data.repository.ExpenseRepository
 import com.example.tripplanner.data.repository.TripRepository
+import com.example.tripplanner.ui.theme.trip.BaseTripViewModel
 import com.example.tripplanner.ui.theme.trip.TripViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +18,7 @@ class ExpenseViewModel(
     private val tripViewModel: TripViewModel,
     private val expenseRepository: ExpenseRepository,
     private val tripRepository: TripRepository
-) : ViewModel() {
+) : BaseTripViewModel() {
 
     private val tripId: Long
         get() = tripViewModel.tripId
@@ -31,14 +31,6 @@ class ExpenseViewModel(
     // Total expense tracking
     val totalExpense: StateFlow<Int> = tripViewModel.totalExpense
 
-    // Error state management
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
-
-    // Loading state management
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
     // Selected expense for detail view
     private val _selectedExpense = MutableStateFlow<ExpenseEntity?>(null)
     val selectedExpense: StateFlow<ExpenseEntity?> = _selectedExpense.asStateFlow()
@@ -47,12 +39,32 @@ class ExpenseViewModel(
     private val _filterByPerson = MutableStateFlow<Long?>(null)
     val filterByPerson: StateFlow<Long?> = _filterByPerson.asStateFlow()
 
-    private fun setError(message: String?) {
-        _errorMessage.value = message
-    }
+    private fun buildExpenseSplits(
+        expenseId: Long,
+        splitWithPersonIds: List<Long>,
+        total: Int,
+        paidByPersonId: Long?
+    ): List<ExpenseSplitEntity> {
+        val validSplitIds = splitWithPersonIds
+            .distinct()
+            .filter { it > 0 }
+            .filter { it != paidByPersonId }
 
-    private fun clearError() {
-        _errorMessage.value = null
+        if (validSplitIds.isEmpty()) {
+            return emptyList()
+        }
+
+        val baseAmount = total / validSplitIds.size
+        val remainder = total % validSplitIds.size
+
+        return validSplitIds.mapIndexed { index, personId ->
+            ExpenseSplitEntity(
+                expenseId = expenseId,
+                personId = personId,
+                tripId = tripId,
+                amount = baseAmount + if (index == 0 && remainder > 0) remainder else 0
+            )
+        }
     }
 
     fun addExpense(
@@ -72,44 +84,30 @@ class ExpenseViewModel(
             setError("Expense name must not be blank")
             return
         }
-
-        viewModelScope.launch {
-            try {
-                clearError()
-                _isLoading.value = true
-
-                val expense = ExpenseEntity(
-                    tripId = tripId,
-                    name = name,
-                    total = total,
-                    paidByPersonId = paidByPersonId,
-                    logisticsId = logisticsId,
-                    notes = notes
-                )
-
-                val splits = if (splitWithPersonIds.isNotEmpty()) {
-                    val splitAmount = total / splitWithPersonIds.size
-                    splitWithPersonIds.map { personId ->
-                        ExpenseSplitEntity(
-                            expenseId = 0, // Will be set in repository
-                            personId = personId,
-                            tripId = tripId,
-                            amount = splitAmount
-                        )
-                    }
-                } else {
-                    emptyList()
-                }
-
-                tripRepository.insertExpenseWithSplits(expense, splits)
-            } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to add expense"
-                setError(errorMsg)
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
-            }
+        if (paidByPersonId == null) {
+            setError("Please select who paid for this expense")
+            return
         }
+
+        executeWithLoading(operation = {
+            val expense = ExpenseEntity(
+                tripId = tripId,
+                name = name,
+                total = total,
+                paidByPersonId = paidByPersonId,
+                logisticsId = logisticsId,
+                notes = notes
+            )
+
+            val splits = buildExpenseSplits(
+                expenseId = 0,
+                splitWithPersonIds = splitWithPersonIds,
+                total = total,
+                paidByPersonId = paidByPersonId
+            )
+
+            tripRepository.insertExpenseWithSplits(expense, splits)
+        })
     }
 
     fun addExpense(expense: ExpenseEntity) {
@@ -125,19 +123,9 @@ class ExpenseViewModel(
 
         val expenseWithTrip = expense.copy(tripId = tripId)
 
-        viewModelScope.launch {
-            try {
-                clearError()
-                _isLoading.value = true
-                expenseRepository.addExpense(expenseWithTrip)
-            } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to add expense"
-                setError(errorMsg)
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
-            }
-        }
+        executeWithLoading(operation = {
+            expenseRepository.addExpense(expenseWithTrip)
+        })
     }
 
     fun deleteExpense(expenseId: Long) {
@@ -146,25 +134,15 @@ class ExpenseViewModel(
             return
         }
 
-        viewModelScope.launch {
-            try {
-                clearError()
-                _isLoading.value = true
-                expenseRepository.deleteExpenseById(expenseId)
-                if (_selectedExpense.value?.expenseId == expenseId) {
-                    _selectedExpense.value = null
-                }
-            } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to delete expense"
-                setError(errorMsg)
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
+        executeWithLoading(operation = {
+            expenseRepository.deleteExpenseById(expenseId)
+            if (_selectedExpense.value?.expenseId == expenseId) {
+                _selectedExpense.value = null
             }
-        }
+        })
     }
 
-    fun updateExpense(expense: ExpenseEntity) {
+    fun updateExpense(expense: ExpenseEntity, splitWithPersonIds: List<Long>) {
         if (expense.total <= 0) {
             setError("Expense amount must be greater than zero")
             return
@@ -173,25 +151,26 @@ class ExpenseViewModel(
             setError("Expense name must not be blank")
             return
         }
+        if (expense.paidByPersonId == null) {
+            setError("Please select who paid for this expense")
+            return
+        }
 
         if (expense.expenseId <= 0) {
             setError("Invalid expense ID for update")
             return
         }
 
-        viewModelScope.launch {
-            try {
-                clearError()
-                _isLoading.value = true
-                expenseRepository.updateExpense(expense)
-            } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to update expense"
-                setError(errorMsg)
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
-            }
-        }
+        executeWithLoading(operation = {
+            val splits = buildExpenseSplits(
+                expenseId = expense.expenseId,
+                splitWithPersonIds = splitWithPersonIds,
+                total = expense.total,
+                paidByPersonId = expense.paidByPersonId
+            )
+            tripRepository.updateExpenseWithSplits(expense, splits)
+            _selectedExpense.value = expense
+        })
     }
 
     fun selectExpense(expense: ExpenseEntity) {

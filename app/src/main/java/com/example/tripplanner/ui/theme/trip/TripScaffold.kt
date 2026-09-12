@@ -1,12 +1,15 @@
 package com.example.tripplanner.ui.theme.trip
 
+import android.app.Application
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.tripplanner.ui.theme.trip.navigation.TripTab
@@ -31,7 +34,13 @@ fun TripScaffold(
 
     val tabs = listOf(TripTab.Overview, TripTab.Expense, TripTab.Logistics, TripTab.Schedule, TripTab.More)
 
-    CompositionLocalProvider(LocalTripViewModel provides tripViewModel) {
+    val application = LocalContext.current.applicationContext as Application
+    val tripDependencies = remember(application) { TripDependencies(application) }
+
+    CompositionLocalProvider(
+        LocalTripViewModel provides tripViewModel,
+        LocalTripDependencies provides tripDependencies
+    ) {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -45,11 +54,8 @@ fun TripScaffold(
             },
             bottomBar = {
                 NavigationBar {
-                    val currentRoute = navController
-                        .currentBackStackEntryAsState()
-                        .value
-                        ?.destination
-                        ?.route
+                    val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+                    val currentRoute = currentBackStackEntry?.destination?.route
 
                     tabs.forEach { tab ->
                         NavigationBarItem(

@@ -1,32 +1,46 @@
 package com.example.tripplanner.ui.theme.trip.more
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.tripplanner.ui.theme.trip.TripViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
-data class MoreItemData(
-    val title: String,
-    val description: String = ""
+data class MoreCategoryData(
+    val type: String,
+    val displayName: String,
+    val itemCount: Int
 )
 
 class MoreViewModel(
     private val tripViewModel: TripViewModel
 ) : ViewModel() {
 
-    private val _items = MutableStateFlow<List<MoreItemData>>(
-        listOf(
-            MoreItemData("Food & Restaurants"),
-            MoreItemData("Notes"),
-            MoreItemData("Packing List"),
-            MoreItemData("Documents")
-        )
+    val categories: StateFlow<List<MoreCategoryData>> = tripViewModel.logistics.map { logistics ->
+        logistics.groupBy { it.type }.map { (type, items) ->
+            MoreCategoryData(
+                type = type,
+                displayName = getDisplayName(type),
+                itemCount = items.size
+            )
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList()
     )
-    val items: StateFlow<List<MoreItemData>> = _items
 
-    // Example: add more items dynamically
-    fun addItem(item: MoreItemData) {
-        _items.value += item
+    private fun getDisplayName(type: String): String {
+        return when (type) {
+            "flight" -> "Flights"
+            "hotel" -> "Accommodations"
+            "car" -> "Transportation"
+            "train" -> "Transportation"
+            "bus" -> "Transportation"
+            else -> type.capitalize()
+        }
     }
 
     // Access tripId if needed

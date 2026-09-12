@@ -1,6 +1,5 @@
 package com.example.tripplanner.ui.theme.trip.schedule
 
-import android.app.Application
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,18 +19,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.tripplanner.ui.theme.trip.LocalTripDependencies
 import com.example.tripplanner.ui.theme.trip.LocalTripViewModel
-import com.example.tripplanner.ui.theme.trip.TripDependencies
 
 @Composable
 fun ScheduleScreen() {
     val tripViewModel = LocalTripViewModel.current
-    val application = androidx.compose.ui.platform.LocalContext.current.applicationContext
+    val dependencies = LocalTripDependencies.current
     // Trip-scoped ViewModel for schedule
     val viewModel: ScheduleViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                val dependencies = TripDependencies(application as Application)
                 ScheduleViewModel(tripViewModel, dependencies.scheduleRepository)
             }
         }
