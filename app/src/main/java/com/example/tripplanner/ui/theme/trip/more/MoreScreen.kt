@@ -1,17 +1,9 @@
 package com.example.tripplanner.ui.theme.trip.more
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.tripplanner.data.entity.LogisticsEntity
 import com.example.tripplanner.ui.theme.trip.LocalTripViewModel
 
 @Composable
@@ -33,40 +26,78 @@ fun MoreScreen() {
         }
     )
 
-    val items by viewModel.items.collectAsState()
+    val categories by viewModel.categories.collectAsState()
+    val logistics by tripViewModel.logistics.collectAsState()
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items.forEach { item ->
-            MoreItem(item)
+        item {
+            Text(
+                "More",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
+
+        categories.forEach { category ->
+            item {
+                CategoryHeader(category)
+            }
+
+            val categoryItems = logistics.filter { it.type == category.type }
+            items(categoryItems) { item ->
+                LogisticsItemCard(item)
+            }
         }
     }
 }
 
 @Composable
-private fun MoreItem(item: MoreItemData) {
+private fun CategoryHeader(category: MoreCategoryData) {
+    Text(
+        "${category.displayName} (${category.itemCount})",
+        style = MaterialTheme.typography.titleLarge,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun LogisticsItemCard(item: LogisticsEntity) {
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = item.title,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f)
+                item.title,
+                style = MaterialTheme.typography.titleMedium
             )
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null
-            )
+            if (item.provider != null) {
+                Text(
+                    "Provider: ${item.provider}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (item.referenceNumber != null) {
+                Text(
+                    "Reference: ${item.referenceNumber}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (item.notes != null) {
+                Text(
+                    item.notes,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

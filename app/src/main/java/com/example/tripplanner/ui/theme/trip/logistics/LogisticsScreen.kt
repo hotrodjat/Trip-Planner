@@ -1,6 +1,5 @@
 package com.example.tripplanner.ui.theme.trip.logistics
 
-import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,19 +20,18 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tripplanner.data.entity.LogisticsEntity
 import com.example.tripplanner.data.repository.LogisticsRepository
+import com.example.tripplanner.ui.theme.trip.LocalTripDependencies
 import com.example.tripplanner.ui.theme.trip.LocalTripViewModel
-import com.example.tripplanner.ui.theme.trip.TripDependencies
 
 @Composable
 fun LogisticsScreen() {
     val tripViewModel = LocalTripViewModel.current
-    val application = androidx.compose.ui.platform.LocalContext.current.applicationContext
+    val dependencies = LocalTripDependencies.current
 
     // Trip-scoped LogisticsViewModel
     val viewModel: LogisticsViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                val dependencies = TripDependencies(application as Application)
                 LogisticsViewModel(tripViewModel, dependencies.logisticsRepository)
             }
         }

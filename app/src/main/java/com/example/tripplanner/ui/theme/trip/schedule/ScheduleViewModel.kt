@@ -1,16 +1,15 @@
 package com.example.tripplanner.ui.theme.trip.schedule
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tripplanner.data.entity.ScheduleEntity
 import com.example.tripplanner.data.repository.ScheduleRepository
+import com.example.tripplanner.ui.theme.trip.BaseTripViewModel
 import com.example.tripplanner.ui.theme.trip.TripViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -25,7 +24,7 @@ data class ScheduleEventUi(
 class ScheduleViewModel(
     private val tripViewModel: TripViewModel,
     private val scheduleRepository: ScheduleRepository
-) : ViewModel() {
+) : BaseTripViewModel() {
 
     private val timeFormatter =
         SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -39,25 +38,9 @@ class ScheduleViewModel(
     // Delegate to TripViewModel's events for reactive updates
     val events: StateFlow<List<ScheduleEntity>> = tripViewModel.events
 
-    // Error state management
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
-
-    // Loading state management
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
     // Selected event for detail view
     private val _selectedEvent = MutableStateFlow<ScheduleEntity?>(null)
     val selectedEvent: StateFlow<ScheduleEntity?> = _selectedEvent.asStateFlow()
-
-    private fun setError(message: String?) {
-        _errorMessage.value = message
-    }
-
-    private fun clearError() {
-        _errorMessage.value = null
-    }
 
     // Format timestamp to readable time string
     fun formatTime(timestamp: Long): String {
@@ -95,23 +78,20 @@ class ScheduleViewModel(
         }
 
         // Delegate to TripViewModel which uses the repository
-        tripViewModel.addEvent(event)
+        executeWithLoading ({
+            tripViewModel.addEvent(event)
+            }
+        )
     }
 
     fun deleteEvent(scheduleId: Long) {
-        viewModelScope.launch {
-            try {
-                clearError()
-                _isLoading.value = true
-                scheduleRepository.deleteSchedule(scheduleId)
-            } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to delete event"
-                setError(errorMsg)
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
+        executeWithLoading ({
+            tripViewModel.deleteEvent(scheduleId)
+            if (_selectedEvent.value?.scheduleId == scheduleId) {
+                _selectedEvent.value = null
             }
-        }
+            }
+        )
     }
 
     fun updateEvent(schedule: ScheduleEntity) {
@@ -125,19 +105,10 @@ class ScheduleViewModel(
             return
         }
 
-        viewModelScope.launch {
-            try {
-                clearError()
-                _isLoading.value = true
-                scheduleRepository.updateSchedule(schedule)
-            } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to update event"
-                setError(errorMsg)
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
+        executeWithLoading ({
+            tripViewModel.updateEvent(schedule)
             }
-        }
+        )
     }
 
     fun selectEvent(event: ScheduleEntity) {

@@ -25,18 +25,20 @@ import com.example.tripplanner.data.entity.ExpenseEntity
 import com.example.tripplanner.data.entity.LogisticsEntity
 import com.example.tripplanner.data.entity.PersonEntity
 import com.example.tripplanner.data.repository.TripRepository
+import com.example.tripplanner.ui.theme.trip.LocalTripDependencies
 import com.example.tripplanner.ui.theme.trip.LocalTripViewModel
 import com.example.tripplanner.ui.theme.trip.TripDependencies
+import com.example.tripplanner.ui.theme.trip.*
+import androidx.compose.material3.FloatingActionButton
 
 @Composable
 fun ExpenseScreen() {
     val tripViewModel = LocalTripViewModel.current
-    val application = LocalContext.current.applicationContext as Application
+    val dependencies = LocalTripDependencies.current
 
     val viewModel: ExpenseViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                val dependencies = TripDependencies(application)
                 ExpenseViewModel(
                     tripViewModel,
                     dependencies.expenseRepository,
@@ -53,8 +55,11 @@ fun ExpenseScreen() {
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val selectedExpense by viewModel.selectedExpense.collectAsState()
+    val tripExpensesWithSplits by tripViewModel.expensesWithSplits.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
+    var expenseToEdit by remember { mutableStateOf<ExpenseEntity?>(null) }
+    var expenseToDelete by remember { mutableStateOf<ExpenseEntity?>(null) }
 
     Box(
         modifier = Modifier
@@ -62,9 +67,7 @@ fun ExpenseScreen() {
             .padding(16.dp)
     ) {
         if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
-            )
+            LoadingIndicator()
         } else {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -94,32 +97,12 @@ fun ExpenseScreen() {
 
                 // Error message display
                 errorMessage?.let { message ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Text(
-                            message,
-                            modifier = Modifier.padding(12.dp),
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
+                    ErrorBanner(message)
                 }
 
                 // Expense list
                 if (expenses.isEmpty()) {
-                    Box(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            "No expenses yet. Add one to get started!",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+                    EmptyStateCard("No expenses yet. Add one to get started!")
                 } else {
                     LazyColumn(
                         modifier = Modifier.weight(1f),
@@ -129,7 +112,10 @@ fun ExpenseScreen() {
                             ExpenseCard(
                                 expense = expense,
                                 people = people,
-                                onDelete = { viewModel.deleteExpense(expense.expenseId) },
+                                onDelete = { expenseToDelete = expense },
+                                onEdit = {
+                                    expenseToEdit = expense
+                                },
                                 onSelect = { viewModel.selectExpense(expense) },
                                 isSelected = selectedExpense?.expenseId == expense.expenseId
                             )
@@ -137,39 +123,82 @@ fun ExpenseScreen() {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Add expense button
-                Button(
+                FloatingActionButton(
                     onClick = { showAddDialog = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        Icons.Filled.Add,
+                        Icons.Default.Add,
                         contentDescription = "Add expense"
                     )
-                    Spacer(Modifier.width(8.dp))
-                    Text("Add Expense")
                 }
             }
         }
 
-        // Add expense dialog
-        if (showAddDialog) {
+        if (showAddDialog || expenseToEdit != null) {
+            val editingExpense = expenseToEdit
+            val existingSplitPersonIds = tripExpensesWithSplits
+                .firstOrNull { it.expense.expenseId == editingExpense?.expenseId }
+                ?.splits
+                ?.map { it.personId }
+                ?: emptyList()
+
             AddExpenseDialog(
                 people = people,
                 logistics = logistics,
-                onDismiss = { showAddDialog = false },
-                onAdd = { name, amount, paidBy, splitWith, logisticsId, notes ->
-                    viewModel.addExpense(
-                        name = name,
-                        total = amount,
-                        paidByPersonId = paidBy,
-                        logisticsId = logisticsId,
-                        notes = notes,
-                        splitWithPersonIds = splitWith
-                    )
+                initialExpense = editingExpense,
+                initialSelectedSplitPersonIds = existingSplitPersonIds,
+                onDismiss = {
                     showAddDialog = false
+                    expenseToEdit = null
+                },
+                onAdd = { name, amount, paidBy, splitWith, logisticsId, notes ->
+                    if (editingExpense != null) {
+                        viewModel.updateExpense(
+                            expense = editingExpense.copy(
+                                name = name,
+                                total = amount,
+                                paidByPersonId = paidBy,
+                                logisticsId = logisticsId,
+                                notes = notes
+                            ),
+                            splitWithPersonIds = splitWith
+                        )
+                    } else {
+                        viewModel.addExpense(
+                            name = name,
+                            total = amount,
+                            paidByPersonId = paidBy,
+                            logisticsId = logisticsId,
+                            notes = notes,
+                            splitWithPersonIds = splitWith
+                        )
+                    }
+                    showAddDialog = false
+                    expenseToEdit = null
+                }
+            )
+        }
+
+        expenseToDelete?.let { expense ->
+            AlertDialog(
+                onDismissRequest = { expenseToDelete = null },
+                title = { Text("Delete expense?") },
+                text = { Text("Delete '${expense.name}'? This will also remove its related split entries.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteExpense(expense.expenseId)
+                            expenseToDelete = null
+                        }
+                    ) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { expenseToDelete = null }) {
+                        Text("Cancel")
+                    }
                 }
             )
         }
@@ -181,6 +210,7 @@ fun ExpenseCard(
     expense: ExpenseEntity,
     people: List<PersonEntity>,
     onDelete: () -> Unit,
+    onEdit: () -> Unit,
     onSelect: () -> Unit,
     isSelected: Boolean
 ) {
@@ -232,12 +262,21 @@ fun ExpenseCard(
                 )
             }
 
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = "Delete expense",
-                    tint = MaterialTheme.colorScheme.error
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = "Edit expense",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Delete expense",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
@@ -247,15 +286,24 @@ fun ExpenseCard(
 fun AddExpenseDialog(
     people: List<PersonEntity>,
     logistics: List<LogisticsEntity>,
+    initialExpense: ExpenseEntity? = null,
+    initialSelectedSplitPersonIds: List<Long> = emptyList(),
     onDismiss: () -> Unit,
     onAdd: (name: String, amount: Int, paidBy: Long?, splitWith: List<Long>, logisticsId: Long?, notes: String?) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var paidBy by remember { mutableStateOf<PersonEntity?>(null) }
-    var selectedSplits by remember { mutableStateOf(setOf<Long>()) }
-    var selectedLogistics by remember { mutableStateOf<LogisticsEntity?>(null) }
-    var notes by remember { mutableStateOf("") }
+    var name by remember(initialExpense?.expenseId) { mutableStateOf(initialExpense?.name.orEmpty()) }
+    var amount by remember(initialExpense?.expenseId) { mutableStateOf(initialExpense?.total?.toString().orEmpty()) }
+    var paidBy by remember(initialExpense?.expenseId, people) {
+        mutableStateOf(people.find { it.personId == initialExpense?.paidByPersonId })
+    }
+    var selectedSplits by remember(initialExpense?.expenseId, initialSelectedSplitPersonIds) {
+        mutableStateOf(initialSelectedSplitPersonIds.toSet())
+    }
+    var selectedLogistics by remember(initialExpense?.expenseId, logistics) {
+        mutableStateOf(logistics.find { it.logisticsId == initialExpense?.logisticsId })
+    }
+    var notes by remember(initialExpense?.expenseId) { mutableStateOf(initialExpense?.notes.orEmpty()) }
+    var validationError by remember(initialExpense?.expenseId) { mutableStateOf<String?>(null) }
 
     var paidByExpanded by remember { mutableStateOf(false) }
     var splitWithExpanded by remember { mutableStateOf(false) }
@@ -284,7 +332,7 @@ fun AddExpenseDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Add New Expense",
+                        if (initialExpense == null) "Add New Expense" else "Edit Expense",
                         style = MaterialTheme.typography.headlineSmall
                     )
                     IconButton(onClick = onDismiss) {
@@ -292,31 +340,30 @@ fun AddExpenseDialog(
                     }
                 }
 
-                // Name
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Name", style = MaterialTheme.typography.labelLarge)
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { name = it },
+                        onValueChange = { name = it; validationError = null },
                         placeholder = { Text("Enter expense name") },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        isError = validationError != null && name.isBlank()
                     )
                 }
 
-                // Amount
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Amount", style = MaterialTheme.typography.labelLarge)
                     OutlinedTextField(
                         value = amount,
-                        onValueChange = { amount = it },
+                        onValueChange = { amount = it; validationError = null },
                         placeholder = { Text("Enter amount") },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        isError = validationError != null && (amount.toIntOrNull() == null || amount.toIntOrNull()!! <= 0)
                     )
                 }
 
-                // Paid By Dropdown
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Paid By", style = MaterialTheme.typography.labelLarge)
                     Box {
@@ -329,7 +376,8 @@ fun AddExpenseDialog(
                                 IconButton(onClick = { paidByExpanded = true }) {
                                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                                 }
-                            }
+                            },
+                            isError = validationError != null && paidBy == null
                         )
                         DropdownMenu(
                             expanded = paidByExpanded,
@@ -342,6 +390,7 @@ fun AddExpenseDialog(
                                     onClick = {
                                         paidBy = person
                                         paidByExpanded = false
+                                        validationError = null
                                     }
                                 )
                             }
@@ -349,7 +398,6 @@ fun AddExpenseDialog(
                     }
                 }
 
-                // Split With Dropdown (Multi-select)
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Split With", style = MaterialTheme.typography.labelLarge)
                     Box {
@@ -394,7 +442,6 @@ fun AddExpenseDialog(
                     }
                 }
 
-                // Logistics Association Dropdown
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Logistics Item (Optional)", style = MaterialTheme.typography.labelLarge)
                     Box {
@@ -434,7 +481,6 @@ fun AddExpenseDialog(
                     }
                 }
 
-                // Notes
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Notes", style = MaterialTheme.typography.labelLarge)
                     OutlinedTextField(
@@ -448,24 +494,38 @@ fun AddExpenseDialog(
                     )
                 }
 
+                validationError?.let { message ->
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
                 Button(
                     onClick = {
-                        val amountInt = amount.toIntOrNull() ?: 0
-                        if (name.isNotBlank() && amountInt > 0) {
-                            onAdd(
-                                name,
-                                amountInt,
-                                paidBy?.personId,
-                                selectedSplits.toList(),
-                                selectedLogistics?.logisticsId,
-                                notes.ifBlank { null }
-                            )
+                        val amountInt = amount.toIntOrNull()
+                        when {
+                            name.isBlank() -> validationError = "Expense name is required"
+                            amountInt == null || amountInt <= 0 -> validationError = "Amount must be a positive number"
+                            paidBy == null -> validationError = "Please select who paid for this expense"
+                            else -> {
+                                validationError = null
+                                onAdd(
+                                    name.trim(),
+                                    amountInt,
+                                    paidBy?.personId,
+                                    selectedSplits.toList(),
+                                    selectedLogistics?.logisticsId,
+                                    notes.ifBlank { null }
+                                )
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Add Expense", modifier = Modifier.padding(8.dp))
+                    Text(if (initialExpense == null) "Add Expense" else "Save Changes", modifier = Modifier.padding(8.dp))
                 }
             }
         }

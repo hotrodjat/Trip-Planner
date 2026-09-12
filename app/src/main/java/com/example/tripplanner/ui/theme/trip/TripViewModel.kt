@@ -172,6 +172,32 @@ class TripViewModel(
         }
     }
 
+    fun updateEvent(schedule: ScheduleEntity) {
+        if (schedule.title.isBlank()) {
+            setError("Event title cannot be empty")
+            return
+        }
+
+        if (schedule.endTime < schedule.startTime) {
+            setError("End time must be after start time")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                clearError()
+                _isLoading.value = true
+                repository.updateSchedule(schedule)
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Failed to update event"
+                setError(errorMsg)
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun addPerson(person: PersonEntity) {
         // Validate input
         if (person.firstName.isBlank()) {
@@ -373,6 +399,72 @@ class TripViewModel(
                 repository.deleteSplitsForExpense(expenseId)
             } catch (e: Exception) {
                 val errorMsg = e.message ?: "Failed to delete expense splits"
+                setError(errorMsg)
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun addLogistics(logistics: LogisticsEntity) {
+        if (logistics.title.isBlank()) {
+            setError("Logistics title cannot be empty")
+            return
+        }
+
+        val logisticsWithTrip = logistics.copy(tripId = tripId)
+
+        viewModelScope.launch {
+            try {
+                clearError()
+                _isLoading.value = true
+                repository.addLogistics(logisticsWithTrip)
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Failed to add logistics item"
+                setError(errorMsg)
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun updateLogistics(logistics: LogisticsEntity) {
+        if (logistics.title.isBlank()) {
+            setError("Logistics title cannot be empty")
+            return
+        }
+
+        if (logistics.logisticsId <= 0) {
+            setError("Invalid logistics ID for update")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                clearError()
+                _isLoading.value = true
+                repository.updateLogistics(logistics)
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Failed to update logistics item"
+                setError(errorMsg)
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun deleteLogistics(logistics: LogisticsEntity) {
+
+        viewModelScope.launch {
+            try {
+                clearError()
+                _isLoading.value = true
+                repository.deleteLogistics(logistics)
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Failed to delete logistics item"
                 setError(errorMsg)
                 e.printStackTrace()
             } finally {

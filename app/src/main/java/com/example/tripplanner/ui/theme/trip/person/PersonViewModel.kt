@@ -1,4 +1,4 @@
-package com.example.tripplanner.ui.theme.trip.bookings
+package com.example.tripplanner.ui.theme.trip.person
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
