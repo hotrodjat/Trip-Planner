@@ -14,6 +14,9 @@ object DatabaseProvider {
                         context.applicationContext,
                         TripDatabase::class.java,
                         "trip_planner.db"
-                    ).fallbackToDestructiveMigration(false).build().also { INSTANCE = it }
+                    )
+                    .fallbackToDestructiveMigration(true)
+                    .build()
+                    .also { INSTANCE = it }
         }
 }

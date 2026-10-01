@@ -13,9 +13,10 @@ import com.example.tripplanner.data.entity.*
         ScheduleEntity::class,
         LogisticsEntity::class,
         PersonEntity::class,
+        TripParticipantEntity::class,
         ExpenseSplitEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(PersonIdListConverter::class)
@@ -26,4 +27,5 @@ abstract class TripDatabase : RoomDatabase() {
     abstract fun logisticsDao(): LogisticsDao
     abstract fun expenseSplitDao(): ExpenseSplitDao
     abstract fun personDao(): PersonDao
+    abstract fun tripParticipantDao(): TripParticipantDao
 }

@@ -7,17 +7,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavHostController
 import com.example.tripplanner.data.entity.LogisticsEntity
 import com.example.tripplanner.ui.theme.trip.LocalTripViewModel
 
 @Composable
-fun MoreScreen() {
+fun MoreScreen(navController: NavHostController) {
     val tripViewModel = LocalTripViewModel.current
 
     val viewModel: MoreViewModel = viewModel(
@@ -28,6 +28,7 @@ fun MoreScreen() {
 
     val categories by viewModel.categories.collectAsState()
     val logistics by tripViewModel.logistics.collectAsState()
+    val peopleCount by tripViewModel.people.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -40,6 +41,35 @@ fun MoreScreen() {
                 "More",
                 style = MaterialTheme.typography.headlineMedium
             )
+        }
+
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    navController.navigate("more/people") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "People",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        "${peopleCount.size}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
 
         categories.forEach { category ->

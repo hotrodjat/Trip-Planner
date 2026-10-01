@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.tripplanner.ui.theme.trip.expense.ExpenseScreen
 import com.example.tripplanner.ui.theme.trip.logistics.LogisticsScreen
 import com.example.tripplanner.ui.theme.trip.more.MoreScreen
+import com.example.tripplanner.ui.theme.trip.more.PeopleScreen
 import com.example.tripplanner.ui.theme.trip.navigation.TripTab
 import com.example.tripplanner.ui.theme.trip.overview.OverviewScreen
 import com.example.tripplanner.ui.theme.trip.schedule.ScheduleScreen
@@ -41,7 +42,12 @@ fun TripNavGraph(
         composable(
             route = TripTab.More.route,
         ) {
-            MoreScreen()
+            MoreScreen(navController)
+        }
+        composable(
+            route = "more/people",
+        ) {
+            PeopleScreen()
         }
     }
 }

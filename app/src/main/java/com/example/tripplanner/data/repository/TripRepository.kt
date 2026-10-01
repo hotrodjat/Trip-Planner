@@ -146,8 +146,12 @@ class TripRepository(
 
     suspend fun getPersonById(personId: Long) = personRepository.getPersonById(personId)
 
-    suspend fun addPerson(person: PersonEntity) {
-        personRepository.addPerson(person)
+    suspend fun addPerson(person: PersonEntity, tripId: Long, personalBudget: Int = 0, notes: String? = null) {
+        personRepository.addPersonToTrip(tripId, person, personalBudget, notes)
+    }
+
+    suspend fun addExistingPersonToTrip(tripId: Long, personId: Long, personalBudget: Int = 0, notes: String? = null) {
+        personRepository.addExistingPersonToTrip(tripId, personId, personalBudget, notes)
     }
 
     suspend fun deletePerson(person: PersonEntity) {
@@ -158,12 +162,20 @@ class TripRepository(
         personRepository.deletePersonById(personId)
     }
 
+    suspend fun deletePersonFromTrip(tripId: Long, personId: Long) {
+        personRepository.deletePersonFromTrip(tripId, personId)
+    }
+
     suspend fun deletePeopleForTrip(tripId: Long) {
         personRepository.deletePeopleForTrip(tripId)
     }
 
     suspend fun updatePerson(person: PersonEntity) {
         personRepository.updatePerson(person)
+    }
+
+    suspend fun updateParticipantDetails(tripId: Long, personId: Long, personalBudget: Int, notes: String?) {
+        personRepository.updateParticipantDetails(tripId, personId, personalBudget, notes)
     }
 
     // Expense delegation methods
