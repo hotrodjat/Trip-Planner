@@ -4,10 +4,15 @@ import android.app.Application
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -33,6 +38,9 @@ fun TripScaffold(
 //    )
 
     val tabs = listOf(TripTab.Overview, TripTab.Expense, TripTab.Logistics, TripTab.Schedule, TripTab.More)
+    val tripTitle by tripViewModel.tripTitle.collectAsState()
+    var renameDialogOpen by remember { mutableStateOf(false) }
+    var draftTripName by remember(tripTitle) { mutableStateOf(tripTitle) }
 
     val application = LocalContext.current.applicationContext as Application
     val tripDependencies = remember(application) { TripDependencies(application) }
@@ -41,22 +49,63 @@ fun TripScaffold(
         LocalTripViewModel provides tripViewModel,
         LocalTripDependencies provides tripDependencies
     ) {
+        val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+        val currentRoute = currentBackStackEntry?.destination?.route
+
+        if (renameDialogOpen) {
+            AlertDialog(
+                onDismissRequest = { renameDialogOpen = false },
+                title = { Text("Rename trip") },
+                text = {
+                    OutlinedTextField(
+                        value = draftTripName,
+                        onValueChange = { draftTripName = it },
+                        singleLine = true,
+                        label = { Text("Trip name") }
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            tripViewModel.updateTripTitle(draftTripName)
+                            renameDialogOpen = false
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { renameDialogOpen = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Trip ${tripViewModel.tripId}") },
+                    title = { Text(tripTitle) },
                     navigationIcon = {
-                        IconButton(onClick = onExitTrip) {
+                        IconButton(onClick = {
+                            if (currentRoute?.startsWith("more/") == true) {
+                                navController.popBackStack(TripTab.More.route, false)
+                            } else {
+                                onExitTrip()
+                            }
+                        }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { renameDialogOpen = true }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Rename trip")
                         }
                     }
                 )
             },
             bottomBar = {
                 NavigationBar {
-                    val currentBackStackEntry = navController.currentBackStackEntryAsState().value
-                    val currentRoute = currentBackStackEntry?.destination?.route
-
                     tabs.forEach { tab ->
                         NavigationBarItem(
                             selected = currentRoute == tab.route,

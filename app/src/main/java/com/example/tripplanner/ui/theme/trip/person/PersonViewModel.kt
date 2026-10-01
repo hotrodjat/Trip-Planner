@@ -3,6 +3,7 @@ package com.example.tripplanner.ui.theme.trip.person
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tripplanner.data.entity.PersonEntity
+import com.example.tripplanner.data.entity.TripParticipantWithPerson
 import com.example.tripplanner.data.repository.PersonRepository
 import com.example.tripplanner.ui.theme.trip.TripViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,21 +20,20 @@ class PersonViewModel(
         get() = tripViewModel.tripId
 
     // Delegate to TripViewModel's people for reactive updates
-    val people: StateFlow<List<PersonEntity>> = tripViewModel.people
+    val people: StateFlow<List<TripParticipantWithPerson>> = tripViewModel.people
 
-    // Error state management
+    private val _availablePeople = MutableStateFlow<List<PersonEntity>>(emptyList())
+    val availablePeople: StateFlow<List<PersonEntity>> = _availablePeople.asStateFlow()
+
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    // Loading state management
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    // Selected person for detail view
-    private val _selectedPerson = MutableStateFlow<PersonEntity?>(null)
-    val selectedPerson: StateFlow<PersonEntity?> = _selectedPerson.asStateFlow()
+    private val _selectedPerson = MutableStateFlow<TripParticipantWithPerson?>(null)
+    val selectedPerson: StateFlow<TripParticipantWithPerson?> = _selectedPerson.asStateFlow()
 
-    // Search functionality
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -45,8 +45,18 @@ class PersonViewModel(
         _errorMessage.value = null
     }
 
-    fun addPerson(person: PersonEntity) {
-        // Validate input
+    fun loadAvailablePeople() {
+        viewModelScope.launch {
+            try {
+                val peopleNotInTrip = personRepository.getPeopleAvailableForTrip(tripId)
+                _availablePeople.value = peopleNotInTrip
+            } catch (e: Exception) {
+                setError(e.message ?: "Failed to load people")
+            }
+        }
+    }
+
+    fun addPerson(person: PersonEntity, personalBudget: Int = 0, notes: String? = null) {
         if (person.firstName.isBlank()) {
             setError("First name cannot be empty")
             return
@@ -57,15 +67,36 @@ class PersonViewModel(
             return
         }
 
-        val personWithTrip = person.copy(tripId = tripId)
+        viewModelScope.launch {
+            try {
+                clearError()
+                _isLoading.value = true
+                personRepository.addPersonToTrip(tripId, person, personalBudget, notes)
+                loadAvailablePeople()
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Failed to add person"
+                setError(errorMsg)
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun addExistingPerson(personId: Long, personalBudget: Int = 0, notes: String? = null) {
+        if (personId <= 0) {
+            setError("Invalid person ID")
+            return
+        }
 
         viewModelScope.launch {
             try {
                 clearError()
                 _isLoading.value = true
-                personRepository.addPerson(personWithTrip)
+                personRepository.addExistingPersonToTrip(tripId, personId, personalBudget, notes)
+                loadAvailablePeople()
             } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to add person"
+                val errorMsg = e.message ?: "Failed to add existing person"
                 setError(errorMsg)
                 e.printStackTrace()
             } finally {
@@ -84,10 +115,11 @@ class PersonViewModel(
             try {
                 clearError()
                 _isLoading.value = true
-                personRepository.deletePersonById(personId)
+                personRepository.deletePersonFromTrip(tripId, personId)
                 if (_selectedPerson.value?.personId == personId) {
                     _selectedPerson.value = null
                 }
+                loadAvailablePeople()
             } catch (e: Exception) {
                 val errorMsg = e.message ?: "Failed to delete person"
                 setError(errorMsg)
@@ -98,7 +130,7 @@ class PersonViewModel(
         }
     }
 
-    fun updatePerson(person: PersonEntity) {
+    fun updatePerson(person: PersonEntity, personalBudget: Int = 0, notes: String? = null) {
         if (person.firstName.isBlank()) {
             setError("First name cannot be empty")
             return
@@ -118,7 +150,9 @@ class PersonViewModel(
             try {
                 clearError()
                 _isLoading.value = true
-                personRepository.updatePerson(person)
+//                personRepository.updatePerson(person)
+                personRepository.updateParticipantDetails(tripId, person.personId, personalBudget, notes)
+                loadAvailablePeople()
             } catch (e: Exception) {
                 val errorMsg = e.message ?: "Failed to update person"
                 setError(errorMsg)
@@ -129,7 +163,7 @@ class PersonViewModel(
         }
     }
 
-    fun selectPerson(person: PersonEntity) {
+    fun selectPerson(person: TripParticipantWithPerson) {
         _selectedPerson.value = person
     }
 

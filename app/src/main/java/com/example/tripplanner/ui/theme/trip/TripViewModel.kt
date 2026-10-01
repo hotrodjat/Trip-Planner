@@ -10,12 +10,15 @@ import com.example.tripplanner.data.entity.ExpenseWithSplits
 import com.example.tripplanner.data.entity.LogisticsEntity
 import com.example.tripplanner.data.entity.PersonEntity
 import com.example.tripplanner.data.entity.ScheduleEntity
+import com.example.tripplanner.data.entity.TripEntity
+import com.example.tripplanner.data.entity.TripParticipantWithPerson
 import com.example.tripplanner.data.repository.TripRepository
 import com.example.tripplanner.ui.theme.trip.schedule.ScheduleEventUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -31,6 +34,16 @@ class TripViewModel(
 
     val tripId: Long =
         savedStateHandle["tripId"] ?: error("tripId missing")
+
+    val tripTitle: StateFlow<String> = repository.getTrip(tripId)
+        .map { trip ->
+            trip?.title?.takeIf { it.isNotBlank() } ?: "Trip $tripId"
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = "Trip $tripId"
+        )
 
     var selectedTab: String
         get() = savedStateHandle["selectedTab"] ?: "overview"
@@ -52,7 +65,7 @@ class TripViewModel(
                 initialValue = emptyList()
             )
 
-    val people: StateFlow<List<PersonEntity>> =
+    val people: StateFlow<List<TripParticipantWithPerson>> =
         repository.getPeopleForTrip(tripId)
             .stateIn(
                 scope = viewModelScope,
@@ -106,6 +119,45 @@ class TripViewModel(
 
     private fun clearError() {
         _errorMessage.value = null
+    }
+
+    fun updateTripTitle(newTitle: String) {
+        val trimmedTitle = newTitle.trim()
+        if (trimmedTitle.isBlank()) {
+            setError("Trip title cannot be empty")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                clearError()
+                _isLoading.value = true
+
+                val existingTrip = repository.getTrip(tripId).first()
+                if (existingTrip == null) {
+                    repository.addTrip(
+                        TripEntity(
+                            tripId = tripId,
+                            title = trimmedTitle,
+                            updatedAt = System.currentTimeMillis()
+                        )
+                    )
+                } else {
+                    repository.updateTrip(
+                        existingTrip.copy(
+                            title = trimmedTitle,
+                            updatedAt = System.currentTimeMillis()
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Failed to update trip title"
+                setError(errorMsg)
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
     fun addEvent(event: ScheduleEventUi) {
@@ -198,8 +250,7 @@ class TripViewModel(
         }
     }
 
-    fun addPerson(person: PersonEntity) {
-        // Validate input
+    fun addPerson(person: PersonEntity, personalBudget: Int = 0, notes: String? = null) {
         if (person.firstName.isBlank()) {
             setError("First name cannot be empty")
             return
@@ -210,15 +261,34 @@ class TripViewModel(
             return
         }
 
-        val personWithTrip = person.copy(tripId = tripId)
+        viewModelScope.launch {
+            try {
+                clearError()
+                _isLoading.value = true
+                repository.addPerson(person, tripId, personalBudget, notes)
+            } catch (e: Exception) {
+                val errorMsg = e.message ?: "Failed to add person"
+                setError(errorMsg)
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun addExistingPerson(personId: Long, personalBudget: Int = 0, notes: String? = null) {
+        if (personId <= 0) {
+            setError("Invalid person ID")
+            return
+        }
 
         viewModelScope.launch {
             try {
                 clearError()
                 _isLoading.value = true
-                repository.addPerson(personWithTrip)
+                repository.addExistingPersonToTrip(tripId, personId, personalBudget, notes)
             } catch (e: Exception) {
-                val errorMsg = e.message ?: "Failed to add person"
+                val errorMsg = e.message ?: "Failed to add existing person"
                 setError(errorMsg)
                 e.printStackTrace()
             } finally {
@@ -237,7 +307,7 @@ class TripViewModel(
             try {
                 clearError()
                 _isLoading.value = true
-                repository.deletePersonById(personId)
+                repository.deletePersonFromTrip(tripId, personId)
             } catch (e: Exception) {
                 val errorMsg = e.message ?: "Failed to delete person"
                 setError(errorMsg)
@@ -248,7 +318,7 @@ class TripViewModel(
         }
     }
 
-    fun updatePerson(person: PersonEntity) {
+    fun updatePerson(person: PersonEntity, personalBudget: Int = 0, notes: String? = null) {
         if (person.firstName.isBlank()) {
             setError("First name cannot be empty")
             return
@@ -269,6 +339,7 @@ class TripViewModel(
                 clearError()
                 _isLoading.value = true
                 repository.updatePerson(person)
+                repository.updateParticipantDetails(tripId, person.personId, personalBudget, notes)
             } catch (e: Exception) {
                 val errorMsg = e.message ?: "Failed to update person"
                 setError(errorMsg)

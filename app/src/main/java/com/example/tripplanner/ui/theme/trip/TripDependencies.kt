@@ -19,7 +19,7 @@ class TripDependencies(private val application: Application) {
 
     val logisticsRepository by lazy { LogisticsRepository(db.logisticsDao()) }
     val scheduleRepository by lazy { ScheduleRepository(db.scheduleDao()) }
-    val personRepository by lazy { PersonRepository(db.personDao()) }
+    val personRepository by lazy { PersonRepository(db.personDao(), db.tripParticipantDao()) }
     val expenseRepository by lazy { ExpenseRepository(db.expenseDao()) }
     val expenseSplitRepository by lazy { ExpenseSplitRepository(db.expenseSplitDao()) }
     val tripRepository by lazy { TripRepository(db.tripDao(), logisticsRepository, scheduleRepository, personRepository, expenseRepository, expenseSplitRepository) }

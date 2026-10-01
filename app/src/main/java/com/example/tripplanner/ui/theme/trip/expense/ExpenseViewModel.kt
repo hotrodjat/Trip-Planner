@@ -1,10 +1,9 @@
 package com.example.tripplanner.ui.theme.trip.expense
 
-import androidx.lifecycle.viewModelScope
 import com.example.tripplanner.data.entity.ExpenseEntity
 import com.example.tripplanner.data.entity.ExpenseSplitEntity
 import com.example.tripplanner.data.entity.LogisticsEntity
-import com.example.tripplanner.data.entity.PersonEntity
+import com.example.tripplanner.data.entity.TripParticipantWithPerson
 import com.example.tripplanner.data.repository.ExpenseRepository
 import com.example.tripplanner.data.repository.TripRepository
 import com.example.tripplanner.ui.theme.trip.BaseTripViewModel
@@ -12,7 +11,6 @@ import com.example.tripplanner.ui.theme.trip.TripViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 class ExpenseViewModel(
     private val tripViewModel: TripViewModel,
@@ -25,7 +23,7 @@ class ExpenseViewModel(
 
     // Delegate to TripViewModel for reactive updates
     val expenses: StateFlow<List<ExpenseEntity>> = tripViewModel.expenses
-    val people: StateFlow<List<PersonEntity>> = tripViewModel.people
+    val people: StateFlow<List<TripParticipantWithPerson>> = tripViewModel.people
     val logistics: StateFlow<List<LogisticsEntity>> = tripViewModel.logistics
 
     // Total expense tracking

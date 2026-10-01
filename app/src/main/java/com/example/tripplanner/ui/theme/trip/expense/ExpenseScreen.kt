@@ -1,7 +1,5 @@
 package com.example.tripplanner.ui.theme.trip.expense
 
-import android.app.Application
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,8 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -23,11 +19,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tripplanner.data.entity.ExpenseEntity
 import com.example.tripplanner.data.entity.LogisticsEntity
-import com.example.tripplanner.data.entity.PersonEntity
-import com.example.tripplanner.data.repository.TripRepository
+import com.example.tripplanner.data.entity.TripParticipantWithPerson
 import com.example.tripplanner.ui.theme.trip.LocalTripDependencies
 import com.example.tripplanner.ui.theme.trip.LocalTripViewModel
-import com.example.tripplanner.ui.theme.trip.TripDependencies
 import com.example.tripplanner.ui.theme.trip.*
 import androidx.compose.material3.FloatingActionButton
 
@@ -208,7 +202,7 @@ fun ExpenseScreen() {
 @Composable
 fun ExpenseCard(
     expense: ExpenseEntity,
-    people: List<PersonEntity>,
+    people: List<TripParticipantWithPerson>,
     onDelete: () -> Unit,
     onEdit: () -> Unit,
     onSelect: () -> Unit,
@@ -284,7 +278,7 @@ fun ExpenseCard(
 
 @Composable
 fun AddExpenseDialog(
-    people: List<PersonEntity>,
+    people: List<TripParticipantWithPerson>,
     logistics: List<LogisticsEntity>,
     initialExpense: ExpenseEntity? = null,
     initialSelectedSplitPersonIds: List<Long> = emptyList(),
